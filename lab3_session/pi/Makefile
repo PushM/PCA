@@ -1,0 +1,5 @@
+PROGS= pi	
+
+include ../Makefile
+
+

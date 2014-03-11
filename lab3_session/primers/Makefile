@@ -1,0 +1,5 @@
+PROGS= primers
+
+include ../Makefile
+
+
