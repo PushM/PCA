@@ -14,7 +14,7 @@ double *buffer;
 int main(int argc, char *argv[])
 {
 	unsigned int i, r, j, n, index;
-	double d/;
+	double d;
 
 	memoization = malloc(sizeof(double) * 2 * PUNTS);
 	buffer = malloc(sizeof(double) * 2 * PUNTS);

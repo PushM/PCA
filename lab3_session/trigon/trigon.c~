@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
 		d += 2*M_PI/PUNTS;
 	}
 	
-
 	if (argc == 1) n = N;
 	else n = atoi(argv[1]);
 
