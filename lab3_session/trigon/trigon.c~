@@ -34,6 +34,10 @@ int main(int argc, char *argv[])
 		r = rand();
 		for (j=0, d=0; j<PUNTS; j++)
 		{
+			/*x = r*cos(d); y = r*sin(d);
+			fwrite(&x, sizeof(x), 1, stdout);
+			fwrite(&y, sizeof(y), 1, stdout);
+			d += 2*M_PI/PUNTS;*/
 			x = r * memoization[(j<<1) + 1];
 			y = r * memoization[   j<<1   ];
 			fwrite(&x, sizeof(x), 1, stdout);
