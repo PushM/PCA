@@ -1,0 +1,6 @@
+gcc     pi.c   -o pi
+gcc  pi.c -pg -g -static  -o pi.pg
+gcc  pi.c -O3  -o pi.3
+gcc  pi.c -g  -o pi.g
+gcc  pi.c -pg -g -O3 -static  -o pi.pg3
+gcc  pi.c -O3 -march=native -mfpmath=sse -ffloat-store -Wl,-s,-O1 -lm  -o pi.pca

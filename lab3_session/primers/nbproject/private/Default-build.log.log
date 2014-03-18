@@ -1,0 +1,6 @@
+gcc     primers.c   -o primers
+gcc  primers.c -pg -g -static  -o primers.pg
+gcc  primers.c -O3  -o primers.3
+gcc  primers.c -g  -o primers.g
+gcc  primers.c -pg -g -O3 -static  -o primers.pg3
+gcc  primers.c -O3 -march=native -mfpmath=sse -ffloat-store -Wl,-s,-O1 -lm  -o primers.pca
