@@ -9,36 +9,38 @@
 #define PUNTS 1000
 
 double *memoization;
+double *buffer;
 
 int main(int argc, char *argv[])
 {
-	unsigned int i, r, j, n;
-	double d, x, y;
+	unsigned int i, r, j, n, index;
+	double d/;
 
 	memoization = malloc(sizeof(double) * 2 * PUNTS);
+	buffer = malloc(sizeof(double) * 2 * PUNTS);
 
 	// Construct memoization cache
 	for (i = 0, d = 0; i < PUNTS; ++i)
 	{
-		memoization[   i<<1   ] = sin(d);
-		memoization[(i<<1) + 1] = cos(d);
+		memoization[   i<<1   ] = cos(d);
+		memoization[(i<<1) + 1] = sin(d);
 		d += 2*M_PI/PUNTS;
 	}
 	
-
-	if (argc == 1) n = N; else n = atoi(argv[1]);
+	if (argc == 1) n = N;
+	else n = atoi(argv[1]);
 
 	srand(0);
-	for (i=0; i<n; i++)
+	for (i = 0; i < n; i++)
 	{
 		r = rand();
-		for (j=0, d=0; j<PUNTS; j++)
+		for (j = 0; j < PUNTS; j++)
 		{
-			x = r * memoization[(j<<1) + 1];
-			y = r * memoization[   j<<1   ];
-			fwrite(&x, sizeof(x), 1, stdout);
-			fwrite(&y, sizeof(y), 1, stdout);
+			index = j<<1;
+			buffer[  index  ] = r * memoization[  index  ]; // x
+			buffer[index + 1] = r * memoization[index + 1]; // y
 		}
+		fwrite(buffer, sizeof(double), 2 * PUNTS, stdout);
 	}
 	return 0;
 }
