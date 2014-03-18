@@ -1,4 +1,4 @@
-PROGS= primers
+PROGS= primers primersORG
 
 include ../Makefile
 

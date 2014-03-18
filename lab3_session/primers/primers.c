@@ -3,16 +3,17 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define bitsPerInt (sizeof(int)<<3)
-#define bytesPerInt (sizeof(int))
+
+#define bitsPerInt ( sizeof(unsigned int) << 3 )
+
 typedef unsigned long long bignum;
-char buf[1000];
+bignum intsInArray;
 
 typedef struct {
     unsigned int *p;		/* pointer to array */
-    //int bitsPerByte;		/* 8 on normal systems */
-    //int bytesPerInt;		/* sizeof(unsigned int) */
-    //int bitsPerInt;		/* for bit arithmetic */
+    int bitsPerByte;		/* 8 on normal systems */
+    int bytesPerInt;		/* sizeof(unsigned int) */
+//    int bitsPerInt;		/* for bit arithmetic */
     bignum bitsInArray;		/* how many bits in array */
     bignum intsInArray;		/* how many uints to give necessary bits */
 } BITARRAY;
@@ -27,25 +28,26 @@ BITARRAY *createBitArray(bignum bits)
 {
     BITARRAY *ba = malloc(sizeof(BITARRAY));
     assert(ba != NULL);
-    //ba->bitsPerByte = 8;
-    //ba->bytesPerInt = sizeof(unsigned int);
-    //ba->bitsPerInt = ba->bitsPerByte * ba->bytesPerInt;
-    //ba->bytesPerInt = sizeof(unsigned int);
-    ba->bitsInArray = bits;
-    ba->intsInArray = (bits / /*ba->*/bitsPerInt) + 1;
-    ba->p = malloc(ba->intsInArray * /*ba->*/bytesPerInt);
+//    ba->bitsPerByte = 8;
+//    ba->bytesPerInt = sizeof(unsigned int);
+
+//    ba->bytesPerInt = sizeof(unsigned int);
+//    ba->bitsInArray = bits;
+//    ba->intsInArray = (bits >> sizeof(unsigned int)) + 1;
+    intsInArray = (bits >> sizeof(unsigned int)) + 1;
+    ba->p = malloc(intsInArray * sizeof(unsigned int));
     assert(ba->p != NULL);
     return ba;
 }
 
-void inline setBit(BITARRAY * ba, bignum bitSS)
+void setBit(BITARRAY * ba, bignum bitSS)
 {
     unsigned int *pInt = ba->p + (bitSS / bitsPerInt);
     unsigned int remainder = (bitSS % bitsPerInt);
     *pInt |= (1 << remainder);
 } 
 
-void inline clearBit(BITARRAY * ba, bignum bitSS) 
+void clearBit(BITARRAY * ba, bignum bitSS)
 {
     unsigned int *pInt = ba->p + (bitSS / bitsPerInt);
     unsigned int remainder = (bitSS % bitsPerInt);
@@ -54,7 +56,7 @@ void inline clearBit(BITARRAY * ba, bignum bitSS)
     *pInt &= mask;
 } 
 
-int inline getBit(BITARRAY * ba, bignum bitSS)
+int getBit(BITARRAY * ba, bignum bitSS)
 {
     unsigned int *pInt = ba->p + (bitSS / bitsPerInt);
     unsigned int remainder = (bitSS % bitsPerInt);
@@ -66,7 +68,7 @@ int inline getBit(BITARRAY * ba, bignum bitSS)
 void clearAll(BITARRAY * ba)
 {
     bignum intSS;
-    for (intSS = 0; intSS <= ba->intsInArray; intSS++) {
+    for (intSS = 0; intSS <= intsInArray; intSS++) {
 	*(ba->p + intSS) = 0;
     }
 }
@@ -74,15 +76,15 @@ void clearAll(BITARRAY * ba)
 void setAll(BITARRAY * ba)
 {
     bignum intSS;
-    for (intSS = 0; intSS <= ba->intsInArray; intSS++) {
+    for (intSS = 0; intSS <= intsInArray; intSS++) {
 	*(ba->p + intSS) = ~0;
     }
 }
 
 void printPrime(bignum bn)
 {
-//    static char buf[1000];
-    sprintf(buf, "%llu", (unsigned long long int)bn);
+    static char buf[1000];
+    sprintf(buf, "%ull", bn);
     buf[strlen(buf) - 2] = '\0';
     printf("%s\n", buf);
 } 
@@ -97,7 +99,7 @@ void findPrimes(bignum topCandidate)
     bignum thisFactor = 2;
     bignum lastSquare = 0;
     bignum thisSquare = 0;
-   while (thisFactor * thisFactor <= topCandidate) {	/* MARK THE MULTIPLES OF THIS FACTOR */
+    while (thisFactor * thisFactor <= topCandidate) {	/* MARK THE MULTIPLES OF THIS FACTOR */
 	bignum mark = thisFactor + thisFactor;
 	while (mark <= topCandidate) {
 	    clearBit(ba, mark);

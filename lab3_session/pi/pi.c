@@ -5,6 +5,93 @@
 int N, N4;
 char a[10240], b[10240], c[10240];
 char string[100];
+unsigned divisio239[2390];
+unsigned multi239[10];
+unsigned div5[50];
+
+void ompletaules(){
+    unsigned i;
+    for (i = 0; i < 2390; i++) {
+        divisio239[i] = i/239;
+    }
+    for (i = 0; i < 50; i++) {
+        div5[i] = i/5;
+    }
+    multi239[0] = 0;
+    multi239[1] = 239;
+    multi239[2] = 239*2;
+    multi239[3] = 239*3;
+    multi239[4] = 239*4;
+    multi239[5] = 239*5;
+    multi239[6] = 239*6;
+    multi239[7] = 239*7;
+    multi239[8] = 239*8;
+    multi239[9] = 239*9;
+}
+
+
+
+void DIVIDE5( char *x)                           
+{                                                
+    int j, k;
+    unsigned q, r, u;
+    long v;
+
+    r = 0;                                       
+    for( k = 0; k <= N4; k+=4 )                  
+    {                                            
+        u = ((r << 3) + r + r) + x[k];                       
+        q=div5[u];
+        r = u - ((q << 2) + q);      
+        x[k] = q;
+        
+        u = ((r << 3) + r + r) + x[k+1];                       
+        q=div5[u];
+        r = u - ((q << 2) + q);      
+        x[k+1] = q; 
+        
+        u = ((r << 3) + r + r) + x[k+2];                       
+        q=div5[u];
+        r = u - ((q << 2) + q);      
+        x[k+2] = q; 
+        
+        u = ((r << 3) + r + r) + x[k+3];                       
+        q=div5[u];
+        r = u - ((q << 2) + q);      
+        x[k+3] = q; 
+    }                                           
+}
+
+void DIVIDE239( char *x)                           
+{                                                
+    int j, k;
+    unsigned q, r, u;
+    long v;
+
+    r = 0;                                       
+    for( k = 0; k <= N4; k+=4 )                  
+    {                                            
+        u = ((r << 3) + r + r) + x[k];                       
+        q = divisio239[u];                               
+        r = u - multi239[q];                           
+        x[k] = q;
+        
+        u = ((r << 3) + r + r) + x[k+1];                       
+        q = divisio239[u];                               
+        r = u - multi239[q];                           
+        x[k+1] = q;  
+        
+        u = ((r << 3) + r + r) + x[k+2];                       
+        q = divisio239[u];                               
+        r = u - multi239[q];                           
+        x[k+2] = q;  
+        
+        u = ((r << 3) + r + r) + x[k+3];                       
+        q = divisio239[u];                               
+        r = u - multi239[q];                           
+        x[k+3] = q;  
+    }                                           
+}
 
 void DIVIDE( char *x, int n )                           
 {                                                
@@ -15,7 +102,7 @@ void DIVIDE( char *x, int n )
     r = 0;                                       
     for( k = 0; k <= N4; k++ )                  
     {                                            
-        u = r * 10 + x[k];                       
+        u = r*10 + x[k];                       
         q = u / n;                               
         r = u - q * n;                           
         x[k] = q;                                
@@ -26,37 +113,94 @@ void LONGDIV( char *x, int n )
 {                                                
     int j, k;
     unsigned q, r, u;
-    long v;
+    unsigned long v;
 
     if( n < 6553 )                               
     {                                            
         r = 0;                                   
-        for( k = 0; k <= N4; k++ )               
+        for( k = 0; k <= N4; k+=4 )               
         {                                        
-            u = r * 10 + x[k];                   
+            u = ((r << 3) + r + r) + x[k];                   
             q = u / n;                           
             r = u - q * n;                       
-            x[k] = q;                            
+            x[k] = q; 
+            
+            u = ((r << 3) + r + r) + x[k+1];                   
+            q = u / n;                           
+            r = u - q * n;                       
+            x[k+1] = q;
+            
+            u = ((r << 3) + r + r) + x[k+2];                   
+            q = u / n;                           
+            r = u - q * n;                       
+            x[k+2] = q;
+            
+            u = ((r << 3) + r + r) + x[k+3];                   
+            q = u / n;                           
+            r = u - q * n;                       
+            x[k+3] = q;
         }                                       
     }                                            
     else                                         
     {                                            
         r = 0;                                   
-        for( k = 0; k <= N4; k++ )              
+        for( k = 0; k <= N4; k+=4 )              
         {                                       
             if( r < 6553 )                      
             {                                   
-                u = r * 10 + x[k];              
+                u = ((r << 3) + r + r) + x[k];              
                 q = u / n;                      
                 r = u - q * n;                  
             }                                   
             else                                
             {                                   
-                v = (long) r * 10 + x[k];       
+                v = (unsigned long) ((r << 3) + r + r) + x[k];       
                 q = v / n;                      
                 r = v - q * n;                  
             }                                   
-            x[k] = q;                           
+            x[k] = q; 
+            
+            if( r < 6553 )                      
+            {                                   
+                u = ((r << 3) + r + r) + x[k+1];              
+                q = u / n;                      
+                r = u - q * n;                  
+            }                                   
+            else                                
+            {                                   
+                v = (unsigned long) ((r << 3) + r + r) + x[k+1];       
+                q = v / n;                      
+                r = v - q * n;                  
+            }                                   
+            x[k+1] = q;
+            
+            if( r < 6553 )                      
+            {                                   
+                u = ((r << 3) + r + r) + x[k+2];              
+                q = u / n;                      
+                r = u - q * n;                  
+            }                                   
+            else                                
+            {                                   
+                v = (unsigned long) ((r << 3) + r + r) + x[k+2];       
+                q = v / n;                      
+                r = v - q * n;                  
+            }                                   
+            x[k+2] = q;
+            
+            if( r < 6553 )                      
+            {                                   
+                u = ((r << 3) + r + r) + x[k+3];              
+                q = u / n;                      
+                r = u - q * n;                  
+            }                                   
+            else                                
+            {                                   
+                v = (unsigned long) ((r << 3) + r + r) + x[k+3];       
+                q = v / n;                      
+                r = v - q * n;                  
+            }                                   
+            x[k+3] = q;
         }                                       
     }                                           
 }
@@ -71,7 +215,7 @@ void MULTIPLY( char *x, int n )
     {                                        
         q = n * x[k] + r;                    
         r = q / 10;                          
-        x[k] = q - r * 10;                   
+        x[k] = q - ((r << 3) + r + r);                   
     }                                        
 }
 
@@ -87,13 +231,31 @@ void SUBTRACT( char *x, char *y, char *z )
     int j, k;
     unsigned q, r, u;
     long v;
-    for( k = N4; k >= 0; k-- )                   
+    for( k = N4; k >= 0; k-=4 )                   
     {                                            
         if( (x[k] = y[k] - z[k]) < 0 )           
         {                                        
             x[k] += 10;                          
             z[k-1]++;                            
-        }                                        
+        }
+        
+        if( (x[k-1] = y[k-1] - z[k-1]) < 0 )           
+        {                                        
+            x[k-1] += 10;                          
+            z[k-2]++;                            
+        } 
+        
+        if( (x[k-2] = y[k-2] - z[k-2]) < 0 )           
+        {                                        
+            x[k-2] += 10;                          
+            z[k-3]++;                            
+        } 
+        
+        if( (x[k-3] = y[k-3] - z[k-3]) < 0 )           
+        {                                        
+            x[k-3] += 10;                          
+            z[k-4]++;                            
+        } 
     }                                            
 }
 
@@ -108,6 +270,8 @@ int main( int argc, char *argv[] )
     N = 10000;
 
     setbuf(stdout, NULL);
+    
+    ompletaules();
 
     calculate();
 
@@ -131,11 +295,11 @@ void calculate( void )
         LONGDIV( c, j );
 
         SUBTRACT( a, c, a );
-        DIVIDE( a, 25 );
-
+        DIVIDE5( a );
+        DIVIDE5( a );
         SUBTRACT( b, c, b );
-        DIVIDE( b, 239 );
-        DIVIDE( b, 239 );
+        DIVIDE239( b );
+        DIVIDE239( b );
 
         progress();
     }
@@ -143,10 +307,10 @@ void calculate( void )
     SET( c, 1 );
 
     SUBTRACT( a, c, a );
-    DIVIDE( a, 5 );
+    DIVIDE5( a );
 
     SUBTRACT( b, c, b );
-    DIVIDE( b, 239 );
+    DIVIDE239( b );
 
     MULTIPLY( a, 4 );
     SUBTRACT( a, a, b );

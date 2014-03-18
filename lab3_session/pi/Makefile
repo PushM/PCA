@@ -1,4 +1,4 @@
-PROGS= pi	
+PROGS= pi pi_org	
 
 include ../Makefile
 
