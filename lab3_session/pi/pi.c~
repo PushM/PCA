@@ -6,52 +6,62 @@ int N, N4;
 char a[10240], b[10240], c[10240];
 char string[100];
 
-unsigned char quo239[2390];
-unsigned short res239[2390];
-
-unsigned char quo25[250];
-unsigned char res25[250];
+unsigned divisio239[2390];
+unsigned multi239[10];
+unsigned div5[50];
 
 void ompletaules(){
     unsigned i;
-	
-	// MEMOIZATION DIVIDE239
-	for (i = 0; i < 2390; i++) {
-		quo239[i] = i/239;
-		res239[i] = (i % 239) * 10;
-	}
-	
-	// MEMOIZATION DIVIDE25
-	for (i = 0; i < 250; i++) {
-		quo25[i] = i/25;
-		res25[i] = (i % 25) * 10;
-	}
+    for (i = 0; i < 2390; i++) {
+        divisio239[i] = i/239;
+    }
+    for (i = 0; i < 50; i++) {
+        div5[i] = i/5;
+    }
+    multi239[0] = 0;
+    multi239[1] = 239;
+    multi239[2] = 239*2;
+    multi239[3] = 239*3;
+    multi239[4] = 239*4;
+    multi239[5] = 239*5;
+    multi239[6] = 239*6;
+    multi239[7] = 239*7;
+    multi239[8] = 239*8;
+    multi239[9] = 239*9;
 }
 
-void DIVIDE25(char *x)
-{
-    unsigned k, q, r, u;
-	
-	r = 0;                                       
-	for(k = 0; k <= N4; k++) {
-		u = r + x[k];	// r*10 + x[k]
-		q = quo25[u];	// u/25
-		r = res25[u];	// (u % 25) * 10
-		x[k] = q;
-    }
+
+
+void DIVIDE5(char *x)                           
+{                                                
+    int j, k;
+    unsigned q, r, u;
+    long v;
+
+    r = 0;                                       
+    for( k = 0; k <= N4; k++ )                  
+    {                                            
+        u = ((r << 3) + r + r) + x[k];	// r*10 + x[k]
+        q=div5[u];						// u/5
+        r = u - ((q << 2) + q);			// u - q*5
+        x[k] = q;
+    }                                           
 }
 
-void DIVIDE239(char *x)                           
-{
-    unsigned k, q, r, u;
+void DIVIDE239( char *x)                           
+{                                                
+    int j, k;
+    unsigned q, r, u;
+    long v;
 
-    r = 0;
-    for(k = 0; k <= N4; k++) {
-		u = r + x[k];	// r*10 + x[k]
-		q = quo239[u];	// u/239
-		r = res239[u];	// (u % 239) * 10
-		x[k] = q;
-    }
+    r = 0;                                       
+    for( k = 0; k <= N4; k++ )
+    {                                            
+        u = ((r << 3) + r + r) + x[k];	// r*10 + x[k]
+        q = divisio239[u];				// u/239
+        r = u - multi239[q];			// u - q*239
+        x[k] = q;
+    }                                           
 }
 
 void DIVIDE( char *x, int n )                           
@@ -65,8 +75,7 @@ void DIVIDE( char *x, int n )
     {                                            
         u = r*10 + x[k];                       
         q = u / n;                               
-        //r = u - q * n;
-		r = u % n;
+        r = u - q * n;                           
         x[k] = q;                                
     }                                           
 }
@@ -76,16 +85,38 @@ void LONGDIV( char *x, int n )
     int j, k;
     unsigned q, r, u;
     unsigned long v;
-	
-	// proc de 64bits
-	r = 0;
-	for( k = 0; k <= N4; k++ )
-	{
-		v = (unsigned long) ((r << 3) + r + r) + x[k];
-		q = v / n;
-		r = v % n;
-		x[k] = q;
-	}
+
+    if( n < 6553 )                               
+    {                                            
+        r = 0;                                   
+        for( k = 0; k <= N4; k++ )               
+        {                                        
+            u = ((r << 3) + r + r) + x[k];                   
+            q = u / n;                           
+            r = u - q * n;                       
+            x[k] = q;
+        }                                       
+    }                                            
+    else                                         
+    {                                            
+        r = 0;                                   
+        for( k = 0; k <= N4; k++ )              
+        {                                       
+            if( r < 6553 )                      
+            {                                   
+                u = ((r << 3) + r + r) + x[k];              
+                q = u / n;                      
+                r = u - q * n;                  
+            }                                   
+            else                                
+            {                                   
+                v = (unsigned long) ((r << 3) + r + r) + x[k];       
+                q = v / n;                      
+                r = v - q * n;                  
+            }                                   
+            x[k] = q; 
+        }                                       
+    }                                           
 }
 
 void MULTIPLY( char *x, int n )                        
@@ -133,9 +164,8 @@ void epilog( void );
 int main( int argc, char *argv[] )
 {
     N = 10000;
-	if (argc > 1)
+	if (argc>1)
 		N = atoi(argv[1]);
-	
     setbuf(stdout, NULL);
     
     ompletaules();
@@ -162,7 +192,8 @@ void calculate( void )
         LONGDIV( c, j );
 
         SUBTRACT( a, c, a );
-		DIVIDE25( a );
+        DIVIDE5( a );
+        DIVIDE5( a );
         SUBTRACT( b, c, b );
         DIVIDE239( b );
         DIVIDE239( b );
@@ -173,7 +204,7 @@ void calculate( void )
     SET( c, 1 );
 
     SUBTRACT( a, c, a );
-    DIVIDE( a, 5 );
+    DIVIDE5( a );
 
     SUBTRACT( b, c, b );
     DIVIDE239( b );
