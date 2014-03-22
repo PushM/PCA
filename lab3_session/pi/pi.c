@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OUTPUT_BUFFER_SIZE 100
+
 int N, N4;
 char a[10240], b[10240], c[10240];
-char string[100];
+char string[OUTPUT_BUFFER_SIZE];
 
 unsigned short quores239[2390][2];
 //unsigned short res239[2390];
@@ -208,21 +210,43 @@ void progress( void )
 
 void epilog( void )
 {
-    unsigned j;
+    unsigned j, buffer_i, aux;
 
     {
         fprintf( stdout, " \n3.");
         for( j = 1; j <= N; j++ )
         {
-            fprintf( stdout, "%d", a[j]);
-            if( j % 5  == 0 )
-                if( j % 50 == 0 )
-                    if( j % 250  == 0 )
-                        fprintf( stdout, "    <%d>\n\n   ", j );
-                    else
-                        fprintf( stdout, "\n   " );
-                else
-                    fprintf( stdout, " " );
+			buffer_i = 0;
+			while (buffer_i < (OUTPUT_BUFFER_SIZE - 20) && j <= N) {
+				aux = 0;
+				sprintf(&(string[buffer_i]), "%d", a[j]);
+				if( j % 5  == 0 ) {
+					if( j % 50 == 0 )
+						if( j % 250  == 0 )
+							aux = sprintf(&(string[buffer_i + 1]), "    <%d>\n\n   ", j);
+						else
+							aux = sprintf(&(string[buffer_i + 1]), "\n   ");
+					else
+						aux = sprintf(&(string[buffer_i + 1]), " ");
+				}
+				buffer_i += aux + 1;
+				
+				j++;
+			}
+			
+			string[buffer_i] = '\0';
+			fprintf(stdout, "%s", &(string[0]));
+			j--;
+			
+			/*fprintf( stdout, "%d", a[j]);
+				if( j % 5  == 0 )
+					if( j % 50 == 0 )
+						if( j % 250  == 0 )
+							fprintf( stdout, "    <%d>\n\n   ", j );
+						else
+							fprintf( stdout, "\n   " );
+					else
+						fprintf( stdout, " " );*/
         }
     }
 }

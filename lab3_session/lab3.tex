@@ -1,0 +1,19 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\author{Adur Saizar\\ Josep Oriol Vilarrubí}
+\title{PCA Lab3}
+\makeindex
+\begin{document}
+\maketitle
+\tableofcontents
+\pagebreak
+\section{Primers}
+In this application we have removed all the memory accesses to the struct that contained the sizes of the values in the array, how many bytes an integer has, how many bits does a byte has... And we have added some defines to do that function.\\
+
+But when you run both versions of the applications with the level of optimization 'O3' you do not observe any speedUp at all, that is because the variables are propagated all over the code when you apply the optimization level 'O3', so the compiler now sees the value of the variables so it make the same optimization we have done.
+\section{Pi}
+\section{Trigon}
+\end{document}
