@@ -10,6 +10,7 @@ char string[OUTPUT_BUFFER_SIZE];
 
 unsigned short quores239[2390][2];
 unsigned char quores25[250][2];
+unsigned char quores5[50][2];
 
 void ompletaules(){
     unsigned i;
@@ -25,6 +26,25 @@ void ompletaules(){
 		quores25[i][0] = i/25;
 		quores25[i][1] = (i % 25) * 10;
 	}
+	
+	// MEMOIZATION DIVIDE5
+	for (i = 0; i < 50; i++) {
+		quores5[i][0] = i/5;
+		quores5[i][1] = (i % 5) * 10;
+	}
+}
+
+void DIVIDE5(char *x)
+{
+    unsigned k, q, r, u;
+	
+	r = 0;                                       
+	for(k = 0; k <= N4; k++) {
+		u = r + x[k];		// r + x[k]
+		q = quores5[u][0];	// u/5
+		r = quores5[u][1];	// (u % 5) * 10
+		x[k] = q;
+    }
 }
 
 void DIVIDE25(char *x)
@@ -33,7 +53,7 @@ void DIVIDE25(char *x)
 	
 	r = 0;                                       
 	for(k = 0; k <= N4; k++) {
-		u = r + x[k];		// r*10 + x[k]
+		u = r + x[k];		// r + x[k]
 		q = quores25[u][0];	// u/25
 		r = quores25[u][1];	// (u % 25) * 10
 		x[k] = q;
@@ -46,7 +66,7 @@ void DIVIDE239(char *x)
 
     r = 0;
     for(k = 0; k <= N4; k++) {
-		u = r + x[k];			// r*10 + x[k]
+		u = r + x[k];			// r + x[k]
 		q = quores239[u][0];	// u/239
 		r = quores239[u][1];	// (u % 239) * 10
 		x[k] = q;
@@ -168,7 +188,8 @@ void calculate( void )
     SET( c, 1 );
 
     SUBTRACT( a, c, a );
-    DIVIDE( a, 5 );
+    //DIVIDE( a, 5 );
+	DIVIDE5( a );
 
     SUBTRACT( b, c, b );
     DIVIDE239( b );
