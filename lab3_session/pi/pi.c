@@ -6,25 +6,29 @@ int N, N4;
 char a[10240], b[10240], c[10240];
 char string[100];
 
-unsigned char quo239[2390];
-unsigned short res239[2390];
+unsigned short quores239[2390][2];
+//unsigned short res239[2390];
 
-unsigned char quo25[250];
-unsigned char res25[250];
+unsigned char quores25[250][2];
+//unsigned char res25[250];
 
 void ompletaules(){
     unsigned i;
 	
 	// MEMOIZATION DIVIDE239
 	for (i = 0; i < 2390; i++) {
-		quo239[i] = i/239;
-		res239[i] = (i % 239) * 10;
+		/*quo239[i] = i/239;
+		res239[i] = (i % 239) * 10;*/
+		quores239[i][0] = i/239;
+		quores239[i][1] = (i % 239) * 10;
 	}
 	
 	// MEMOIZATION DIVIDE25
 	for (i = 0; i < 250; i++) {
-		quo25[i] = i/25;
-		res25[i] = (i % 25) * 10;
+		/*quo25[i] = i/25;
+		res25[i] = (i % 25) * 10;*/
+		quores25[i][0] = i/25;
+		quores25[i][1] = (i % 25) * 10;
 	}
 }
 
@@ -34,9 +38,9 @@ void DIVIDE25(char *x)
 	
 	r = 0;                                       
 	for(k = 0; k <= N4; k++) {
-		u = r + x[k];	// r*10 + x[k]
-		q = quo25[u];	// u/25
-		r = res25[u];	// (u % 25) * 10
+		u = r + x[k];		// r*10 + x[k]
+		q = quores25[u][0];	// u/25
+		r = quores25[u][1];	// (u % 25) * 10
 		x[k] = q;
     }
 }
@@ -47,34 +51,30 @@ void DIVIDE239(char *x)
 
     r = 0;
     for(k = 0; k <= N4; k++) {
-		u = r + x[k];	// r*10 + x[k]
-		q = quo239[u];	// u/239
-		r = res239[u];	// (u % 239) * 10
+		u = r + x[k];			// r*10 + x[k]
+		q = quores239[u][0];	// u/239
+		r = quores239[u][1];	// (u % 239) * 10
 		x[k] = q;
     }
 }
 
 void DIVIDE( char *x, int n )                           
-{                                                
-    int j, k;
-    unsigned q, r, u;
-    long v;
+{
+    unsigned k, q, r, u;
 
-    r = 0;                                       
-    for( k = 0; k <= N4; k++ )                  
-    {                                            
-        u = r*10 + x[k];                       
-        q = u / n;                               
-        //r = u - q * n;
+    r = 0;
+    for( k = 0; k <= N4; k++ )
+    {
+        u = r*10 + x[k];
+        q = u / n;
 		r = u % n;
-        x[k] = q;                                
-    }                                           
+        x[k] = q;
+    }
 }
 
 void LONGDIV( char *x, int n )                          
-{                                                
-    int j, k;
-    unsigned q, r, u;
+{
+    unsigned k, q, r, u;
     unsigned long v;
 	
 	// proc de 64bits
@@ -88,18 +88,18 @@ void LONGDIV( char *x, int n )
 	}
 }
 
-void MULTIPLY( char *x, int n )                        
-{                                            
+void MULTIPLY( char *x, int n )
+{
     int j, k;
     unsigned q, r, u;
     long v;
-    r = 0;                                   
-    for( k = N4; k >= 0; k-- )               
-    {                                        
-        q = n * x[k] + r;                    
-        r = q / 10;                          
-        x[k] = q - ((r << 3) + r + r);                   
-    }                                        
+    r = 0;
+    for( k = N4; k >= 0; k-- )
+    {
+        q = n * x[k] + r;
+        r = q / 10;
+        x[k] = q - r*10;
+    }
 }
 
 void SET( char *x, int n )                              
@@ -208,7 +208,7 @@ void progress( void )
 
 void epilog( void )
 {
-    int j;
+    unsigned j;
 
     {
         fprintf( stdout, " \n3.");
