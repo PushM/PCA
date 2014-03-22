@@ -9,26 +9,19 @@ char a[10240], b[10240], c[10240];
 char string[OUTPUT_BUFFER_SIZE];
 
 unsigned short quores239[2390][2];
-//unsigned short res239[2390];
-
 unsigned char quores25[250][2];
-//unsigned char res25[250];
 
 void ompletaules(){
     unsigned i;
 	
 	// MEMOIZATION DIVIDE239
 	for (i = 0; i < 2390; i++) {
-		/*quo239[i] = i/239;
-		res239[i] = (i % 239) * 10;*/
 		quores239[i][0] = i/239;
 		quores239[i][1] = (i % 239) * 10;
 	}
 	
 	// MEMOIZATION DIVIDE25
 	for (i = 0; i < 250; i++) {
-		/*quo25[i] = i/25;
-		res25[i] = (i % 25) * 10;*/
 		quores25[i][0] = i/25;
 		quores25[i][1] = (i % 25) * 10;
 	}
@@ -237,16 +230,6 @@ void epilog( void )
 			string[buffer_i] = '\0';
 			fprintf(stdout, "%s", &(string[0]));
 			j--;
-			
-			/*fprintf( stdout, "%d", a[j]);
-				if( j % 5  == 0 )
-					if( j % 50 == 0 )
-						if( j % 250  == 0 )
-							fprintf( stdout, "    <%d>\n\n   ", j );
-						else
-							fprintf( stdout, "\n   " );
-					else
-						fprintf( stdout, " " );*/
         }
     }
 }
