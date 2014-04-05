@@ -3,15 +3,16 @@
 #include <stdlib.h>
 
 #define OUTPUT_BUFFER_SIZE 100
+
 #define INNER_BODY(_k,_var,_res,_quo) 	u = r ## _res + _var[_k];\
 										q = quores ## _quo[u][0];\
 										r ## _res = quores ## _quo[u][1];\
 										_var[_k] = q;
 
-#define INNER_LONG_BODY(k)	v = ((r << 3) + r + r) + x[k];\
-							q = v / n;\
-							r = v % n;\
-							x[k] = q;
+#define INNER_LONG_BODY(k, _rd, _wr)	v = ((r << 3) + r + r) + _rd[k];\
+										q = v / n;\
+										r = v % n;\
+										_wr[k] = q;
 
 #define INNER_MULT_BODY(k)	q = n * x[k] + r;\
 					        r = q / 10;\
@@ -38,7 +39,7 @@
 #endif
 
 int N, N4;
-char a[10240], b[10240], c[10240];
+char a[10240], b[10240], c[10240], c_static[10240];
 char string[OUTPUT_BUFFER_SIZE];
 
 unsigned short quores239[2390][2];
@@ -170,13 +171,30 @@ void LONGDIV( char *x, int n )
 	// proc de 64bits
 	r = 0;
 	for( k = 0; k <= N4 - (UNROLL_DEG - 1); k += UNROLL_DEG ) {
-		INNER_LONG_BODY(k)
-		INNER_LONG_BODY(k+1)
-		INNER_LONG_BODY(k+2)
-		INNER_LONG_BODY(k+3)
+		INNER_LONG_BODY( k , x, x)
+		INNER_LONG_BODY(k+1, x, x)
+		INNER_LONG_BODY(k+2, x, x)
+		INNER_LONG_BODY(k+3, x, x)
 	}
 	for(; k <= N4; k++) {
-		INNER_LONG_BODY(k)
+		INNER_LONG_BODY(k, x, x)
+	}
+}
+
+void LONGDIV2( char *x, char *y, int n )                          
+{
+    unsigned k, q, r, u, v;
+	
+	// proc de 64bits
+	r = 0;
+	for( k = 0; k <= N4 - (UNROLL_DEG - 1); k += UNROLL_DEG ) {
+		INNER_LONG_BODY( k , y, x)
+		INNER_LONG_BODY(k+1, y, x)
+		INNER_LONG_BODY(k+2, y, x)
+		INNER_LONG_BODY(k+3, y, x)
+	}
+	for(; k <= N4; k++) {
+		INNER_LONG_BODY(k, y, x)
 	}
 }
 
@@ -267,11 +285,13 @@ void calculate( void )
 
     SET( a, 0 );
     SET( b, 0 );
+	
+	SET( c_static, 1 );
 
     for( j = 2 * N4 + 1; j >= 3; j -= 2 )
     {
-        SET( c, 1 );
-        LONGDIV( c, j );
+		LONGDIV2(c, c_static, j);	// SET( c, 1 );
+									// LONGDIV( c, j );
 
 		// LOOP FUSION GROUP 1
 		DUAL_SUBTRACT( a, b, c );	// SUBTRACT( a, c, a )
