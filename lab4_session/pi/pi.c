@@ -9,10 +9,10 @@
 										r ## _res = quores ## _quo[u][1];\
 										_var[_k] = q;
 
-#define INNER_LONG_BODY(k, _rd, _wr)	v = ((r << 3) + r + r) + _rd[k];\
+#define INNER_LONG_BODY(k,_dst,_org)	v = ((r << 3) + r + r) + _org[k];\
 										q = v / n;\
 										r = v % n;\
-										_wr[k] = q;
+										_dst[k] = q;
 
 #define INNER_MULT_BODY(k)	q = n * x[k] + r;\
 					        r = q / 10;\
@@ -39,7 +39,7 @@
 #endif
 
 int N, N4;
-char a[10240], b[10240], c[10240], c_static[10240];
+char a[10240], b[10240], c[10240], ones[10240];
 char string[OUTPUT_BUFFER_SIZE];
 
 unsigned short quores239[2390][2];
@@ -117,35 +117,41 @@ void DIVIDE239(char *x)
 	}
 }
 
-void MASOCHISTIC_DIVIDE( char *a, char *b )
+void MASOCHISTIC_DIVIDE( char *a, char *b, char *c, char *ones, int n )
 {
-	unsigned k, q, u, r25, r239_1, r239_2;
+	unsigned k, q, u, v, r, r25, r239_1, r239_2;
 
-	r25 = r239_1 = r239_2 = 0;
+	r = r25 = r239_1 = r239_2 = 0;
 	
 	INNER_BODY(0, a, 25, 25)
 	INNER_BODY(0, b, 239_1, 239)
-	for(k = 1; k <= N4-(UNROLL_DEG-1) - 1; k+=UNROLL_DEG) {
+	INNER_LONG_BODY(0, c, ones)
+	for(k = 1; k <= N4-(UNROLL_DEG-1) - 1; k += UNROLL_DEG) {
 		INNER_BODY(  k  , a, 25, 25)
 		INNER_BODY(  k  , b, 239_1, 239)
 		INNER_BODY(k - 1, b, 239_2, 239)
+		INNER_LONG_BODY(k, c, ones)
 		
 		INNER_BODY(k + 1, a, 25, 25)
 		INNER_BODY(k + 1, b, 239_1, 239)
 		INNER_BODY(  k  , b, 239_2, 239)
+		INNER_LONG_BODY(k + 1, c, ones)
 		
 		INNER_BODY(k + 2, a, 25, 25)
 		INNER_BODY(k + 2, b, 239_1, 239)
 		INNER_BODY(k + 1, b, 239_2, 239)
+		INNER_LONG_BODY(k + 2, c, ones)
 		
 		INNER_BODY(k + 3, a, 25, 25)
 		INNER_BODY(k + 3, b, 239_1, 239)
 		INNER_BODY(k + 2, b, 239_2, 239)
+		INNER_LONG_BODY(k + 3, c, ones)
 	}
 	for(; k <= N4; k++) {
 		INNER_BODY(  k  , a, 25, 25)
 		INNER_BODY(  k  , b, 239_1, 239)
 		INNER_BODY(k - 1, b, 239_2, 239)
+		INNER_LONG_BODY(k, c, ones)
 	}
 	INNER_BODY(k - 1, b, 239_2, 239)
 }
@@ -188,13 +194,13 @@ void LONGDIV2( char *x, char *y, int n )
 	// proc de 64bits
 	r = 0;
 	for( k = 0; k <= N4 - (UNROLL_DEG - 1); k += UNROLL_DEG ) {
-		INNER_LONG_BODY( k , y, x)
-		INNER_LONG_BODY(k+1, y, x)
-		INNER_LONG_BODY(k+2, y, x)
-		INNER_LONG_BODY(k+3, y, x)
+		INNER_LONG_BODY(  k  , x, y)
+		INNER_LONG_BODY(k + 1, x, y)
+		INNER_LONG_BODY(k + 2, x, y)
+		INNER_LONG_BODY(k + 3, x, y)
 	}
 	for(; k <= N4; k++) {
-		INNER_LONG_BODY(k, y, x)
+		INNER_LONG_BODY(k, x, y)
 	}
 }
 
@@ -282,36 +288,35 @@ void calculate( void )
     int j;
 
     N4 = N + 4;
+	j = 2 * N4 + 1;
 
     SET( a, 0 );
     SET( b, 0 );
 	
-	SET( c_static, 1 );
+	SET( ones, 1 );
+	LONGDIV2(c, ones, j);	// c = ones / j
 
-    for( j = 2 * N4 + 1; j >= 3; j -= 2 )
+    for(; j >= 3; j -= 2 )
     {
-		LONGDIV2(c, c_static, j);	// SET( c, 1 );
-									// LONGDIV( c, j );
-
 		// LOOP FUSION GROUP 1
 		DUAL_SUBTRACT( a, b, c );	// SUBTRACT( a, c, a )
 									// SUBTRACT( b, c, b )
 
 		// LOOP FUSION GROUP 2
-		MASOCHISTIC_DIVIDE( a, b );	// DIVIDE25( a )
-									// DIVIDE239( b )
-									// DIVIDE239( b )
+		MASOCHISTIC_DIVIDE( a, b, c, ones, j - 2);	// DIVIDE25( a )
+													// DIVIDE239( b )
+													// DIVIDE239( b )
+													// SET( c, 1 ); -> s'ha substituit per un array estatic (ones)
+													// LONGDIV( c, j - 2 ); -> per la seguent iteracio
 
 		// TODO BUFFERING PROGRESS
         progress();
     }
 
-    SET( c, 1 );
-
-    SUBTRACT( a, c, a );
+    SUBTRACT( a, ones, a );
 	DIVIDE5( a );
 
-    SUBTRACT( b, c, b );
+	SUBTRACT( b, ones, b );
     DIVIDE239( b );
 
 	// TODO LOOP FUSION GROUP 3
@@ -347,12 +352,12 @@ void progress( void )
 
 void progressBuff( void)
 {
-	/*unsigned mask = (unsigned)('.');
+	unsigned mask = (unsigned)('.');
 	mask |= (mask << 8);
 	mask |= (mask << 16);
-	mask |= (mask << 32);*/
+	mask |= (mask << 32);
 	
-	//unsigned *buff = malloc();
+	unsigned *buff = (unsigned *) malloc(sizeof(unsigned) * 500);
 }
 
 void epilog( void )
