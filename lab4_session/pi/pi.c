@@ -156,7 +156,31 @@ void MASOCHISTIC_DIVIDE( char *a, char *b, char *c, char *ones, int n )
 	INNER_BODY(k - 1, b, 239_2, 239)
 }
 
-void DIVIDE( char *x, int n )                           
+void DUAL_DIVIDE( char *a, char *b )
+{
+	unsigned k, q, u, r5, r239;
+	
+	r5 = r239 = 0;
+	for(k = 0; k <= N4 - (UNROLL_DEG - 1); k += UNROLL_DEG) {
+		INNER_BODY(  k  , a, 5, 5)
+		INNER_BODY(  k  , b, 239, 239)
+		
+		INNER_BODY(k + 1, a, 5, 5)
+		INNER_BODY(k + 1, b, 239, 239)
+		
+		INNER_BODY(k + 2, a, 5, 5)
+		INNER_BODY(k + 2, b, 239, 239)
+		
+		INNER_BODY(k + 3, a, 5, 5)
+		INNER_BODY(k + 3, b, 239, 239)
+	}
+	for(; k <= N4; k++) {
+		INNER_BODY(  k  , a, 5, 5)
+		INNER_BODY(  k  , b, 239, 239)
+	}
+}
+
+/*void DIVIDE( char *x, int n )                           
 {
     unsigned k, q, r, u;
 
@@ -168,9 +192,9 @@ void DIVIDE( char *x, int n )
 		r = u % n;
         x[k] = q;
     }
-}
+}*/
 
-void LONGDIV( char *x, int n )                          
+/*void LONGDIV( char *x, int n )                          
 {
     unsigned k, q, r, u, v;
 	
@@ -185,7 +209,7 @@ void LONGDIV( char *x, int n )
 	for(; k <= N4; k++) {
 		INNER_LONG_BODY(k, x, x)
 	}
-}
+}*/
 
 void LONGDIV2( char *x, char *y, int n )                          
 {
@@ -259,6 +283,40 @@ void DUAL_SUBTRACT( char *a, char *b, char *c )
 	}
 }
 
+void TRIPLE_FUSION( char *a, char *b )
+{
+	// a *= 4;
+	// a = a - b;
+	// a *= 4;
+	
+	int k, n = 4;
+    unsigned q, r, u;
+    r = 0;
+    /*for( k = N4; k >= UNROLL_DEG-1; k -= UNROLL_DEG )
+    {
+		INNER_MULT_BODY(k)
+		SUBTRACT_BODY(k)
+		INNER_MULT_BODY(k)
+		
+		INNER_MULT_BODY(k-1)
+		SUBTRACT_BODY(k - 1)
+		INNER_MULT_BODY(k-1)
+		
+		INNER_MULT_BODY(k-2)
+		SUBTRACT_BODY(k - 2)
+		INNER_MULT_BODY(k-2)
+		
+		INNER_MULT_BODY(k-3)
+		SUBTRACT_BODY(k - 3)
+		INNER_MULT_BODY(k-3)
+    }
+	for(; k >= 0; k--) {
+		INNER_MULT_BODY(k)
+		SUBTRACT_BODY(k)
+		INNER_MULT_BODY(k)
+	}*/
+}
+
 
 void calculate( void );
 void progress( void );
@@ -294,7 +352,7 @@ void calculate( void )
     SET( b, 0 );
 	
 	SET( ones, 1 );
-	LONGDIV2(c, ones, j);	// c = ones / j
+	LONGDIV2(c, ones, j);	// LONGDIV( c, j )
 
     for(; j >= 3; j -= 2 )
     {
@@ -307,26 +365,22 @@ void calculate( void )
 													// DIVIDE239( b )
 													// DIVIDE239( b )
 													// SET( c, 1 ); -> s'ha substituit per un array estatic (ones)
-													// LONGDIV( c, j - 2 ); -> per la seguent iteracio
-
-		// TODO BUFFERING PROGRESS
-        progress();
+													// LONGDIV( c, j - 2 ); -> calculat per la seguent iteracio
     }
 
-    SUBTRACT( a, ones, a );
-	DIVIDE5( a );
-
-	SUBTRACT( b, ones, b );
-    DIVIDE239( b );
+    DUAL_SUBTRACT ( a, b, ones );	//SUBTRACT( a, ones, a );
+									//SUBTRACT( b, ones, b );
+	
+	DUAL_DIVIDE( a, b ); 	//DIVIDE5( a );
+							//DIVIDE239( b );
 
 	// TODO LOOP FUSION GROUP 3
+	// TRIPLE_FUSION( a, b )
     MULTIPLY( a, 4 );
     SUBTRACT( a, a, b );
     MULTIPLY( a, 4 );
 
-	// TODO BUFFERING PROGRESS
-    progress();
-	//progressBuff();
+	progressBuff();
 }
 
 /*
@@ -352,12 +406,17 @@ void progress( void )
 
 void progressBuff( void)
 {
-	unsigned mask = (unsigned)('.');
-	mask |= (mask << 8);
-	mask |= (mask << 16);
-	mask |= (mask << 32);
+	unsigned SIZE = 2000, i, j;
+	unsigned TOTAL = ((2 * N4) - 2)>>1;
+	TOTAL+=2;
+	char *buff = (char *) malloc(SIZE);
 	
-	unsigned *buff = (unsigned *) malloc(sizeof(unsigned) * 500);
+	for (i = 0; i < TOTAL; i += SIZE) {
+		for (j = 0; j < SIZE && i + j < TOTAL; j++)
+			buff[j] = '.';
+		
+		fwrite((void *)buff, sizeof(char), j, stdout);
+	}
 }
 
 void epilog( void )
