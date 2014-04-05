@@ -3,10 +3,10 @@
 #include <stdlib.h>
 
 #define OUTPUT_BUFFER_SIZE 100
-#define INNER_BODY(_k,_quo)	u = r + x[_k];\
-        					q = quores ## _quo[u][0];\
-							r = quores ## _quo[u][1];\
-				        	x[_k] = q;
+#define INNER_BODY(_k,_var,_res,_quo) 	u = r ## _res + _var[_k];\
+										q = quores ## _quo[u][0];\
+										r ## _res = quores ## _quo[u][1];\
+										_var[_k] = q;
 
 #define INNER_LONG_BODY(k)	v = ((r << 3) + r + r) + x[k];\
 							q = v / n;\
@@ -16,6 +16,22 @@
 #define INNER_MULT_BODY(k)	q = n * x[k] + r;\
 					        r = q / 10;\
 					        x[k] = q - r*10;
+							
+#define SUBTRACT_BODY(k) 	x[k] = y[k] - z[k];\
+							aux = x[k] >> 31;\
+							x[  k  ] += aux & 10;\
+							z[k - 1] += aux & 1;
+
+#define DUAL_SUBTRACT_BODY(k)	a[k] = c[k] - a[k];\
+								aux = a[k] >> 31;\
+								a[  k  ] += aux & 10;\
+								a[k - 1] += aux & 1;\
+								\
+								b[k] = c[k] - b[k];\
+								aux = b[k] >> 31;\
+								b[  k  ] += aux & 10;\
+								b[k - 1] += aux & 1;
+
 
 #ifndef UNROLL_DEG
 	#define	UNROLL_DEG	4
@@ -57,14 +73,14 @@ void DIVIDE5(char *x)
 	
 	r = 0;                                       
 	for(k = 0; k <= N4-(UNROLL_DEG-1); k+=UNROLL_DEG) {
-		INNER_BODY(k,5)
-		INNER_BODY(k+1,5)
-		INNER_BODY(k+2,5)
-		INNER_BODY(k+3,5)
+		INNER_BODY(k, x, , 5)
+		INNER_BODY(k+1, x, , 5)
+		INNER_BODY(k+2, x, , 5)
+		INNER_BODY(k+3, x, , 5)
     }
 
 	for(; k <= N4; k++) {
-		INNER_BODY(k,5)
+		INNER_BODY(k, x, , 5)
 	}
 }
 
@@ -74,13 +90,13 @@ void DIVIDE25(char *x)
 	
 	r = 0;                                       
 	for(k = 0; k <= N4-(UNROLL_DEG-1); k+=UNROLL_DEG) {
-		INNER_BODY(k,25)
-		INNER_BODY(k+1,25)
-		INNER_BODY(k+2,25)
-		INNER_BODY(k+3,25)
+		INNER_BODY(k, x, , 25)
+		INNER_BODY(k+1, x, , 25)
+		INNER_BODY(k+2, x, , 25)
+		INNER_BODY(k+3, x, , 25)
     }
 	for(; k <= N4; k++) {
-		INNER_BODY(k,25)
+		INNER_BODY(k, x, , 25)
 	}
 }
 
@@ -89,15 +105,48 @@ void DIVIDE239(char *x)
     unsigned k, q, r, u;
 
     r = 0;
-    for(k = 0; k <= N4-(UNROLL_DEG-1); k+=UNROLL_DEG) {	
-		INNER_BODY(k,239)
-		INNER_BODY(k+1,239)
-		INNER_BODY(k+2,239)
-		INNER_BODY(k+3,239)
+    for(k = 0; k <= N4-(UNROLL_DEG-1); k+=UNROLL_DEG) {
+		INNER_BODY(k, x, , 239)
+		INNER_BODY(k+1, x, , 239)
+		INNER_BODY(k+2, x, , 239)
+		INNER_BODY(k+3, x, , 239)
 	}
 	for(; k <= N4; k++) {
-		INNER_BODY(k,239)
+		INNER_BODY(k, x, , 239)
 	}
+}
+
+void MASOCHISTIC_DIVIDE( char *a, char *b )
+{
+	unsigned k, q, u, r25, r239_1, r239_2;
+
+	r25 = r239_1 = r239_2 = 0;
+	
+	INNER_BODY(0, a, 25, 25)
+	INNER_BODY(0, b, 239_1, 239)
+	for(k = 1; k <= N4-(UNROLL_DEG-1) - 1; k+=UNROLL_DEG) {
+		INNER_BODY(  k  , a, 25, 25)
+		INNER_BODY(  k  , b, 239_1, 239)
+		INNER_BODY(k - 1, b, 239_2, 239)
+		
+		INNER_BODY(k + 1, a, 25, 25)
+		INNER_BODY(k + 1, b, 239_1, 239)
+		INNER_BODY(  k  , b, 239_2, 239)
+		
+		INNER_BODY(k + 2, a, 25, 25)
+		INNER_BODY(k + 2, b, 239_1, 239)
+		INNER_BODY(k + 1, b, 239_2, 239)
+		
+		INNER_BODY(k + 3, a, 25, 25)
+		INNER_BODY(k + 3, b, 239_1, 239)
+		INNER_BODY(k + 2, b, 239_2, 239)
+	}
+	for(; k <= N4; k++) {
+		INNER_BODY(  k  , a, 25, 25)
+		INNER_BODY(  k  , b, 239_1, 239)
+		INNER_BODY(k - 1, b, 239_2, 239)
+	}
+	INNER_BODY(k - 1, b, 239_2, 239)
 }
 
 void DIVIDE( char *x, int n )                           
@@ -133,11 +182,10 @@ void LONGDIV( char *x, int n )
 
 void MULTIPLY( char *x, int n )
 {
-    int j, k;
+    int k;
     unsigned q, r, u;
-    long v;
     r = 0;
-    for( k = N4; k >= UNROLL_DEG-1; k-=UNROLL_DEG )
+    for( k = N4; k >= UNROLL_DEG-1; k -= UNROLL_DEG )
     {
 		INNER_MULT_BODY(k)
 		INNER_MULT_BODY(k-1)
@@ -158,23 +206,39 @@ void SET( char *x, int n )
 
 void SUBTRACT( char *x, char *y, char *z )                      
 {                                                
-    int j, k;
-    unsigned q, r, u;
-    long v;
-    for( k = N4; k >= 0; k-- )                   
-    {                    
-//TODO unroll pendent		
-        if( (x[k] = y[k] - z[k]) < 0 )           
-        {                                        
-            x[k] += 10;                          
-            z[k-1]++;                            
-        }
-    }                                            
+    int k, aux;
+    for( k = N4; k >= UNROLL_DEG - 1; k -= UNROLL_DEG ) {
+		SUBTRACT_BODY(k)
+		SUBTRACT_BODY(k - 1)
+		SUBTRACT_BODY(k - 2)
+		SUBTRACT_BODY(k - 3)
+    }
+    for(; k >= 0; k--) {
+		SUBTRACT_BODY(k);
+	}
+}
+
+void DUAL_SUBTRACT( char *a, char *b, char *c )
+{
+	// a = c - a
+	// b = c - b
+	
+	int k, aux;
+	for( k = N4; k >= UNROLL_DEG - 1; k -= UNROLL_DEG ) {
+		DUAL_SUBTRACT_BODY(k)
+		DUAL_SUBTRACT_BODY(k - 1)
+		DUAL_SUBTRACT_BODY(k - 2)
+		DUAL_SUBTRACT_BODY(k - 3)
+	}
+	for(; k >= 0; k--) {
+		DUAL_SUBTRACT_BODY(k)
+	}
 }
 
 
 void calculate( void );
 void progress( void );
+void progressBuff( void );
 void epilog( void );
 
 
@@ -209,17 +273,16 @@ void calculate( void )
         SET( c, 1 );
         LONGDIV( c, j );
 
-//GRUPO 1
-        SUBTRACT( a, c, a );
-        SUBTRACT( b, c, b );
-//<\GRUPO 1>
+		// LOOP FUSION GROUP 1
+		DUAL_SUBTRACT( a, b, c );	// SUBTRACT( a, c, a )
+									// SUBTRACT( b, c, b )
 
-//TEAM 2
-		DIVIDE25( a );
-        DIVIDE239( b );
-        DIVIDE239( b );
-//<\TEAM 2>
-//BUFFERING PROGRESS
+		// LOOP FUSION GROUP 2
+		MASOCHISTIC_DIVIDE( a, b );	// DIVIDE25( a )
+									// DIVIDE239( b )
+									// DIVIDE239( b )
+
+		// TODO BUFFERING PROGRESS
         progress();
     }
 
@@ -231,11 +294,14 @@ void calculate( void )
     SUBTRACT( b, c, b );
     DIVIDE239( b );
 
+	// TODO LOOP FUSION GROUP 3
     MULTIPLY( a, 4 );
     SUBTRACT( a, a, b );
     MULTIPLY( a, 4 );
 
+	// TODO BUFFERING PROGRESS
     progress();
+	//progressBuff();
 }
 
 /*
@@ -257,6 +323,16 @@ void calculate( void )
 void progress( void )
 {
     printf(".");
+}
+
+void progressBuff( void)
+{
+	/*unsigned mask = (unsigned)('.');
+	mask |= (mask << 8);
+	mask |= (mask << 16);
+	mask |= (mask << 32);*/
+	
+	//unsigned *buff = malloc();
 }
 
 void epilog( void )
