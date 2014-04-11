@@ -1,0 +1,7 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}Inlining}{2}
+\contentsline {section}{\numberline {2}Loop Unrolling}{2}
+\contentsline {subsection}{\numberline {2.1}Inner loop}{2}
+\contentsline {subsection}{\numberline {2.2}Medium loop}{2}
+\contentsline {subsection}{\numberline {2.3}Outer loop}{2}
+\contentsline {section}{\numberline {3}Loop fusion and other optimitzation applied to pi.c}{2}
