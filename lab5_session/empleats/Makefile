@@ -1,0 +1,6 @@
+PROGS= empleats
+
+
+include ../Makefile
+
+
