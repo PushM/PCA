@@ -1,0 +1,47 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\author{Adur Saizar\\ Josep Oriol Vilarrubí\\ pca27}
+\title{PCA Laboratory 2}
+\makeindex
+\begin{document}
+\maketitle
+\tableofcontents
+\pagebreak
+\section{Inlining}
+the time obtained without inlining is 3.55 seconds, when applying inlining we obtain an speed-up of 1.23X because it inlines all the routines insides the funciton calculate, the number of operations of branching and the multiplication get highly reduced, is not always a good option to force the inline of a function as we've seen in the case when we forced the DIVIDE function to be inlined.
+\section{Loop Unrolling}
+The original code of matriu4x4 takes 2,017 seconds to complete, we try to optimize that by unrolling some loops
+\subsection{Inner loop}
+\begin{enumerate}
+\item Time: 1,361
+\item Speed-up: 1,48x
+\item number of instruction: $89 * 16 = 1424$
+\end{enumerate}
+
+\subsection{Medium loop}
+\begin{enumerate}
+\item Time: 1.187
+\item Speed-up: 1,7x
+\item number of instruction: $339 * 4 = 1356$
+\end{enumerate}
+
+\subsection{Outer loop}
+\begin{enumerate}
+\item Time: 0.099
+\item Speed-up: 20,4x
+\item number of instruction: 383
+\end{enumerate}
+
+The best unrolling degree in this case is to unroll all the loop($4^3$) this is because you don't need to calculate any effective address as the prepocessor would do it for you.
+
+The version inlined by hand is better than the one with O3 due to the fact that we pass the array pointers as arguments, the compiler cannot compute the effective address during the compilation process, and it has to add the relative offset to the array initial address.
+
+\section{Loop fusion and other optimitzation applied to pi.c}
+We applied loop fusion to the pi.c code in the substract function that are nearby, the another fusion we've done is the DIVIDE25,the both of the DIVIDE239 and the LONGDIV next to it, also we've substitued the set(c,1) function for an static array of ones, after the loop we fusioned two substract and two divides, and also we've buffered the progress function and done some conditional branch removement in the SUSBTRACT function.
+\end{document}
